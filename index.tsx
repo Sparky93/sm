@@ -7,7 +7,6 @@ import Footer from "../../components/Footer";
 import Cookies from "cookies";
 import YoutubeTokenHelper from "../../utils/YoutubeTokenHelper";
 import { server } from "../../config";
-import { StateMachineFactory } from "./StateMachineFactory";
 import { StateMachineManager } from "./StateMachineManager";
 
 const StateMachinePage = ({ isAuthed, youtubeModel }) => {
@@ -68,8 +67,10 @@ export const getServerSideProps = async (context) => {
     youtubeModel.currentUserChannelId = "channelId_1"
     youtubeModel.currentUserBlockchainId = "blockchain_1"
     youtubeModel.blockchainOwner = null
-    youtubeModel.offersSize = 0
-    youtubeModel.transactionsSize = 0
+    youtubeModel.gotOffers = false
+    youtubeModel.gotPrice = false
+    youtubeModel.gotBids = false
+    // Unminted -> Unbidded -> Owned
 
     return { props: { isAuthed, youtubeModel } }
 }

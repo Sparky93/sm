@@ -12,11 +12,15 @@ export abstract class BaseModel implements IToken, IModel {
     }
 
     public isListed(): boolean {
-        return this.getTransactionsSize() > 0 //TODO condition is not correct (has price?)
+        return this.hasPrice()
     }
 
-    public hasOffers(): boolean {
-        return this.getOffersSize() > 0
+    public isOffered(): boolean {
+        return this.hasOffers()
+    }
+
+    public isBidded(): boolean {
+        return this.hasBids()
     }
 
     public abstract getCurrentUserChannelId(): string
@@ -27,7 +31,9 @@ export abstract class BaseModel implements IToken, IModel {
 
     public abstract getCurrentUserBlockchainId(): string
 
-    public abstract getOffersSize(): number //TODO refactor to boolean
+    public abstract hasOffers(): boolean
 
-    public abstract getTransactionsSize(): number // probably redundant
+    public abstract hasPrice(): boolean
+
+    public abstract hasBids(): boolean
 }

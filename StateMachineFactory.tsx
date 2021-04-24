@@ -17,7 +17,7 @@ export class StateMachineFactory {
                             listed: { type: 'final' },
                             unlisted: {
                                 type: 'compound',
-                                initial: model.hasOffers() ? 'offered' : 'unoffered',
+                                initial: model.isOffered() ? 'offered' : 'unoffered',
                                 states: {
                                     offered: { type: 'final' },
                                     unoffered: { type: 'final' }
@@ -30,7 +30,7 @@ export class StateMachineFactory {
                         states: {
                             listed: { type: 'final' },
                             unlisted: {
-                                initial: model.hasOffers() ? 'offered' : 'unoffered',
+                                initial: model.isOffered() ? 'offered' : 'unoffered',
                                 states: {
                                     offered: { type: 'final' },
                                     unoffered: { type: 'final' }
@@ -43,7 +43,7 @@ export class StateMachineFactory {
         } else {
             stateMachine = createMachine({
                 id: 'unminted',
-                initial: model.hasOffers() ? 'bidded' : 'unbidded',
+                initial: model.isBidded() ? 'bidded' : 'unbidded',
                 type: 'compound',
                 states: {
                     bidded: {

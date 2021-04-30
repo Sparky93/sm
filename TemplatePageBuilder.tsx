@@ -1,5 +1,4 @@
-import TemplatePage from "../../components/TemplatePage"
-import { SMActionButton, SMDescription, SMTitle } from './SMComponents';
+import { SMActionButton, SMDescription, SMPrimaryComponent, SMSecondaryComponent, SMTernaryComponent, SMTitle } from './SMComponents';
 
 export class TemplatePageBuilder {
     private title;
@@ -24,18 +23,18 @@ export class TemplatePageBuilder {
         return this
     }
 
-    addPrimaryComponent(primaryComponent): TemplatePageBuilder {
-        this.primaryComponent = primaryComponent
+    addPrimaryComponent(model): TemplatePageBuilder {
+        this.primaryComponent = SMPrimaryComponent(model)
         return this
     }
 
-    addSecondaryComponent(secondaryComponent): TemplatePageBuilder {
-        this.secondaryComponent = secondaryComponent
+    addSecondaryComponent(): TemplatePageBuilder {
+        this.secondaryComponent = SMSecondaryComponent()
         return this
     }
 
-    addTernaryComponent(ternaryComponent) : TemplatePageBuilder {
-        this.ternaryComponent = ternaryComponent
+    addTernaryComponent() : TemplatePageBuilder {
+        this.ternaryComponent = SMTernaryComponent()
         return this
     }
 

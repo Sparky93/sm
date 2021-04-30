@@ -1,47 +1,23 @@
-export function makeBid() {
-
-}
-
-export function buy() {
-
-}
-
-export function makeOffer() {
-
-}
-
-export function sellByOffer() {
-
-}
-
-export function sellByBid() {
-
-}
-
 export function list() {
-    /* OPTIONAL */
+   //listTokup
 }
 
 export function mint() {
-    /* OPTIONAL */
+   //mint
 }
 
 export function mintAndList() {
-
-}
-
-export function listAtFixedPrice() {
-
+    //deleted
 }
 
 export function getListedTokenStruct() {
-
+    //getListedToken
 }
 
 export function getOffers() {
-
+    //getOffer
 }
 
 export function getBids() {
-
+    //getBid
 }

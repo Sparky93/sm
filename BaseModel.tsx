@@ -27,6 +27,8 @@ export abstract class BaseModel implements IToken, IModel {
 
     public abstract getChannelId(): string
 
+    public abstract getTokenId(): number
+
     public abstract getBlockchainOwnerId(): string
 
     public abstract getCurrentUserBlockchainId(): string

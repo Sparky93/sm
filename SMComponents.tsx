@@ -18,8 +18,8 @@ export function SMPrimaryComponent(model) {
     return <YoutubeVideoPanel {...model} />
 }
 
-export function SMSecondaryComponent() {
-    return <div><input type="text" placeholder="$" className="px-3 py-3 placeholder-blueGray-300 text-blueGray-300 relative bg-white bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full" /></div>
+export function SMSecondaryComponent(setInput) {
+    return <div><input onInput={e => setInput(e.target.value)} placeholder="$" className="px-3 py-3 placeholder-blueGray-300 text-purple-600 relative bg-white bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full" /></div>
 }
 
 export function SMTernaryComponent() {

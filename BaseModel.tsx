@@ -23,6 +23,8 @@ export abstract class BaseModel implements IToken, IModel {
         return this.hasBids()
     }
 
+    public abstract getVideoId(): string
+    
     public abstract getCurrentUserChannelId(): string
 
     public abstract getChannelId(): string

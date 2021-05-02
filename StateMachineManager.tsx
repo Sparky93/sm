@@ -1,19 +1,16 @@
 import { BaseModel } from "./BaseModel";
 import { StateMachineFactory } from "./StateMachineFactory";
 import { TemplatePageBuilder } from "./TemplatePageBuilder";
-import { mintAndList} from "./IMethods";
 import { ContractMethods } from "../../ethereum/contractMethods";
 
 export class StateMachineManager {
-    public static observeRenderer(model: BaseModel, setBuilder) {
-        this.observe(model, (states) => {
+    public static observeRenderer(model: BaseModel, setBuilder, input, setInput) {
+        this.observe(model, async (states) => {
             let newBuilder = TemplatePageBuilder
                 .get()
                 .addPrimaryComponent(model)
                 .addTernaryComponent()
-                
-                const contractMethods = new ContractMethods();
-            
+
             for (let state of states) {
                 switch (state) {
                     case 'minted':
@@ -24,59 +21,73 @@ export class StateMachineManager {
                     case 'unminted':
                         if (states.includes('unowned')) {
                             newBuilder
-                                .addActionButton("MAKE BID", () => contractMethods.bidNewVideo())
-                                .addSecondaryComponent()
+                                .addActionButton("MAKE BID", () => ContractMethods.bidNewVideo(model.getVideoId(), input, model.getCurrentUserBlockchainId()))
+                                .addSecondaryComponent(setInput)
                         }
                         break;
                     case 'owned': break;
                     case 'unowned':
                         if (states.includes('listed')) {
+                            const { tokenId, seller, minValue, onlySellTo } = await ContractMethods.getListedToken(model.getTokenId())
+
                             newBuilder
                                 .addTitle('This video is listed')
-                                .addDescription('COST: 100$ | 0.4 ETH')
-                                .addActionButton("BUY", () => contractMethods.buyListedTokup())
+                                .addDescription(`COST: ${minValue}`)
+                                .addActionButton("BUY", () => ContractMethods.buyListedTokup(model.getTokenId(), model.getCurrentUserBlockchainId(), input))
                         } else if (states.includes('unlisted')) {
                             newBuilder
-                                .addSecondaryComponent()
-                                .addActionButton("MAKE AN OFFER", () => contractMethods.makeOfferTokup())
+                                .addSecondaryComponent(setInput)
+                                .addActionButton("MAKE AN OFFER", () => ContractMethods.makeOfferTokup(model.getTokenId(), model.getCurrentUserBlockchainId(), input))
                         }
                         break;
                     case 'listed':
                         // if onlySellTo != null && 
                         if (states.includes('owned')) {
+                            const { tokenId, seller, minValue, onlySellTo } = await ContractMethods.getListedToken(model.getTokenId())
+
                             newBuilder
                                 //.addActionButton('VIEW', () => { /* REDIRECT ON SELLING PANEL */ })
-                                .addDescription('LISTED FOR 0.4 ETH')
+                                .addDescription(`LISTED FOR ${minValue}`)
                         }
                         break;
                     case 'unlisted':
                         if (states.includes('owned') && states.includes('offered')) {
+                            const { bidder, value } = await ContractMethods.getOffer(model.getTokenId())
+
                             newBuilder
-                                .addDescription('You\'ve been offered 0.4 ETH by 0x048959FHJSFHJ*&')
-                                .addActionButton("SELL", () => contractMethods.sellByOffer())
+                                .addDescription(`You\'ve been offered ${value} by ${bidder}`)
+                                .addActionButton("SELL", () => ContractMethods.sellByOffer(model.getTokenId(),
+                                    model.getBlockchainOwnerId(), input))
                         }
                         break;
                     case 'bidded':
                         if (states.includes('unminted') && states.includes('owned')) {
+                            const { bidder, value } = await ContractMethods.getHighestBid(model.getVideoId())
+
                             newBuilder
-                                .addTitle('The highest bid is from 0x048959FHJSFHJ*& for 0.4 ETH')
-                                .addActionButton("SELL", () => contractMethods.sellByBid())
+                                .addTitle(`The highest bid is from ${bidder} for ${value}`)
+                                .addActionButton("SELL", () => ContractMethods.sellByBid(model.getVideoId(),
+                                    model.getCurrentUserBlockchainId(), model.getBlockchainOwnerId()))
                         }
                         break
                     case 'unbidded':
                         if (states.includes('unminted') && states.includes('owned')) {
                             newBuilder
                                 .addTitle('You can MINT and SELL this')
-                                .addSecondaryComponent()
-                                .addActionButton("MINT & LIST", () => mintAndList())
+                                .addSecondaryComponent(setInput)
+                                .addActionButton("MINT & LIST", async () => {
+                                    await ContractMethods.mint(model.getVideoId(), model.getCurrentUserBlockchainId())
+                                    const tokenId = await ContractMethods.getTokenId(model.getVideoId())
+                                    await ContractMethods.listTokup(model.getCurrentUserBlockchainId(), tokenId, input, null)
+                                })
                         }
                         break;
                     case 'offered': break;
                     case 'unoffered':
                         if (states.includes('unlisted') && states.includes('owned')) {
                             newBuilder
-                                .addSecondaryComponent()
-                                .addActionButton("LIST", () => contractMethods.listTokup())
+                                .addSecondaryComponent(setInput)
+                                .addActionButton("LIST", () => ContractMethods.listTokup(model.getCurrentUserBlockchainId(), model.getTokenId(), input, null))
                         }
                         break;
                 }

@@ -9,14 +9,26 @@ import YoutubeTokenHelper from "../../utils/YoutubeTokenHelper";
 import { server } from "../../config";
 import TemplatePage from "../../components/TemplatePage";
 import { StateMachineManager } from "./StateMachineManager";
+import { ContractMethods } from "../../ethereum/contractMethods";
+import { MetamaskConnection } from "../../ethereum/metamaskConnection";
 
 const StateMachinePage = ({ isAuthed, youtubeModel }) => {
     let [builder, setBuilder] = useState(null)
+    let [input, setInput] = useState('')
+    let [metamaskAccountAddress, setMetamaskAccountAddress] = useState(null)
 
     useEffect(() => {
-        let model: YoutubeModel = YoutubeModel.makeFromOther(youtubeModel)
-        StateMachineManager.observeRenderer(model, setBuilder)
-    }, [youtubeModel])
+        let model: YoutubeModel = YoutubeModel.makeFromOther(JSON.parse(youtubeModel))
+        getMetamaskAccountAddress()
+        model.currentUserBlockchainId = metamaskAccountAddress
+        StateMachineManager.observeRenderer(model, setBuilder, input, setInput)
+    }, [youtubeModel, metamaskAccountAddress])
+
+    async function getMetamaskAccountAddress() {
+        const metamaskConnection = new MetamaskConnection(window);
+        const account = await metamaskConnection.checkMetamaskAccount();
+        setMetamaskAccountAddress(account)
+    }
 
     return (<div className="bg-gray-800 min-h-screen">
         <TopNavbar isAuthed={isAuthed} />
@@ -25,7 +37,7 @@ const StateMachinePage = ({ isAuthed, youtubeModel }) => {
                 <title>Create Next App</title>
                 <link rel="icon" href="/favicon.ico" />
             </Head>
-
+            {input}
             <main className="flex flex-col justify-center items-center">
                 <div className="text-white font-bold max-w-sm rounded overflow-hidden shadow-lg">
                     <TemplatePage {...builder?.build()} />
@@ -40,21 +52,22 @@ export const getServerSideProps = async (context) => {
     const cookies = new Cookies(context.req, context.res)
     const isAuthed = YoutubeTokenHelper.isAuthed(cookies)
 
-    let youtubeModel: YoutubeModel = await axios.get(`${server}/api/youtube/videos/video-by-id?video_id=rxmJg8_7HiU`)
-        .then((response) => response.data)
-
     /**
-     * ADD TEST DATA TO THE MODEL SO WE CAN TEST CASES
+     * DECORATE THE MODEL WITH BLOCKCHAIN INFORMATIONS
      */
-    youtubeModel.channelId = "channelId_1"
-    youtubeModel.currentUserChannelId = "channelId_0"
-    youtubeModel.currentUserBlockchainId = "blockchain_1"
-    youtubeModel.blockchainOwner = null//"blockchain_0"
-    youtubeModel.gotOffers = false
+    let youtubeModel: YoutubeModel = await axios.get(`${server}/api/youtube/videos/video-by-id?video_id=rxmJg8_7HiU`)
+        .then((response) => YoutubeModel.makeFromOther(response.data))
+    const currentUserChannelId = YoutubeTokenHelper.getChannelId(cookies)
+    const { token, owner } = await ContractMethods.getTokenAndOwner(youtubeModel.getVideoId())
+    //youtubeModel.currentUserBlockchainId = await getMetamaskAccountAddress()
+    youtubeModel.currentUserChannelId = currentUserChannelId
+    youtubeModel.blockchainOwner = owner
+    youtubeModel.tokenId = token
+    youtubeModel.gotOffers = await ContractMethods.getOffer(youtubeModel.tokenId) != null
     youtubeModel.gotPrice = false
-    youtubeModel.gotBids = false
+    youtubeModel.gotBids = null//await ContractMethods.getBid(youtubeModel.tokenId) != null
 
-    return { props: { isAuthed, youtubeModel } }
+    return { props: { isAuthed, youtubeModel: JSON.stringify(youtubeModel) } }
 }
 
 export default StateMachinePage;

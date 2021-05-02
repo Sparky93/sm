@@ -28,8 +28,8 @@ export class TemplatePageBuilder {
         return this
     }
 
-    addSecondaryComponent(): TemplatePageBuilder {
-        this.secondaryComponent = SMSecondaryComponent()
+    addSecondaryComponent(setInput): TemplatePageBuilder {
+        this.secondaryComponent = SMSecondaryComponent(setInput)
         return this
     }
 
